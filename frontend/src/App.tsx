@@ -1,9 +1,27 @@
+
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+
+function Calendario() {
+  return (
+    <div style={{ padding: 32, textAlign: "center" }}>
+      <h2>Calendário</h2>
+      <p>Em breve...</p>
+    </div>
+  );
+}
 
 function App() {
-  return <>
-  <Navbar/>
-  </>;
+  return (
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/calendario" element={<Calendario />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
