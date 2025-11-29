@@ -25,7 +25,6 @@ export class ApiResponse<T> {
     return new ApiResponse(message, data);
   }
 
-  // 2. Cenário de Lista Paginada
   static successPaginated<T>(
     data: T,
     meta: ApiPaginationMeta,
