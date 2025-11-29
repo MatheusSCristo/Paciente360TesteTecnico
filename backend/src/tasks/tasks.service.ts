@@ -48,30 +48,26 @@ export class TasksService {
 
     const skip = (pageNumber - 1) * perPageNumber;
 
-    try {
-      const [tasks, total] = await Promise.all([
-        this.prismaService.task.findMany({
-          skip,
-          take: perPageNumber, // Prisma exige Int aqui
-        }),
-        this.prismaService.task.count(),
-      ]);
+    const [tasks, total] = await Promise.all([
+      this.prismaService.task.findMany({
+        skip,
+        take: perPageNumber, // Prisma exige Int aqui
+      }),
+      this.prismaService.task.count(),
+    ]);
 
-      const totalPages = Math.ceil(total / perPageNumber);
+    const totalPages = Math.ceil(total / perPageNumber);
 
-      return ApiResponse.successPaginated({
-        data: tasks,
-        meta: {
-          total,
-          perPage: perPageNumber,
-          totalPages,
-          page: pageNumber,
-        },
-        message: 'Tarefas recuperadas com sucesso',
-      });
-    } catch (error) {
-      console.log('Erro ao recuperar tarefas:', error);
-    }
+    return ApiResponse.successPaginated({
+      data: tasks,
+      meta: {
+        total,
+        perPage: perPageNumber,
+        totalPages,
+        page: pageNumber,
+      },
+      message: 'Tarefas recuperadas com sucesso',
+    });
   }
 
   async findOne(id: string) {
