@@ -11,13 +11,34 @@ export enum PriorityLevel {
 }
 
 export class Task {
+  constructor({
+    title,
+    description,
+    priority,
+    dueDate,
+  }: {
+    title: string;
+    description?: string;
+    priority?: PriorityLevel;
+    dueDate?: Date;
+  }) {
+    this.title = title;
+    this.description = description || '';
+    this.status = TaskStatus.TO_DO;
+    this.dueDate = dueDate || null;
+    this.priority = priority || PriorityLevel.MEDIUM;
+    this.completedAt = null;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+  }
+
   id: string;
   title: string;
   description?: string;
   status: TaskStatus;
-  dueDate?: Date;
+  dueDate: Date | null;
   priority: PriorityLevel;
-  completedAt?: Date;
+  completedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

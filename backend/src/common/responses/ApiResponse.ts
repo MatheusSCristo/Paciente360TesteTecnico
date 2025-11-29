@@ -18,18 +18,25 @@ export class ApiResponse<T> {
     this.timestamp = new Date().toISOString();
   }
 
-  static success<T>(
-    data: T,
-    message: string = 'Operação realizada com sucesso',
-  ): ApiResponse<T> {
-    return new ApiResponse(message, data);
+  static success<T>({
+    data,
+    message = 'Operação realizada com sucesso',
+  }: {
+    data?: T;
+    message?: string;
+  }): ApiResponse<T> {
+    return new ApiResponse<T>(message, data);
   }
 
-  static successPaginated<T>(
-    data: T,
-    meta: ApiPaginationMeta,
-    message: string = 'Lista recuperada',
-  ): ApiResponse<T> {
+  static successPaginated<T>({
+    data,
+    meta,
+    message = 'Lista recuperada',
+  }: {
+    data: T;
+    meta: ApiPaginationMeta;
+    message?: string;
+  }): ApiResponse<T> {
     return new ApiResponse(message, data, meta);
   }
 }

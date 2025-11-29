@@ -17,4 +17,7 @@ export class CreateTaskDto {
   @IsOptional()
   @IsEnum(PriorityLevel, { message: 'priority deve ser LOW, MEDIUM ou HIGH' })
   priority?: PriorityLevel;
+
+  @IsOptional()
+  dueDate?: Date;
 }
