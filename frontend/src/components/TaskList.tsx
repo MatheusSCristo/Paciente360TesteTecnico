@@ -1,6 +1,9 @@
 import {
   Badge,
   Box,
+  Checkbox,
+  Flex,
+  Grid,
   HStack,
   Pagination,
   Spinner,
@@ -8,10 +11,9 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Clock, Flag } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
-
 
 export type Task = {
   id: string;
@@ -38,7 +40,7 @@ type TasksResponse = {
   message: string;
 };
 
-const PAGE_SIZE = 5; 
+const PAGE_SIZE = 5;
 
 const useTasks = (page: number) => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -65,9 +67,21 @@ const useTasks = (page: number) => {
     };
 
     fetchTasks();
-  }, [page]); 
+  }, [page]);
 
   return { tasks, total, loading };
+};
+
+const statusMapped = {
+  TO_DO: "PENDENTE",
+  DOING: "FAZENDO",
+  DONE: "CONCLUÍDO",
+};
+
+const priorityMapped = {
+  LOW: "BAIXA",
+  MEDIUM: "MÉDIA",
+  HIGH: "ALTA",
 };
 
 const TaskList: React.FC = () => {
@@ -75,77 +89,98 @@ const TaskList: React.FC = () => {
   const { tasks, total, loading } = useTasks(page);
 
   return (
-    <Box p={4} borderWidth={1} borderRadius="md" bg="white">
-      <Text fontSize="xl" mb={4} fontWeight="bold">
-        Lista de Tarefas ({total})
-      </Text>
+    <Flex direction={"column"} flex={1} overflow="hidden">
+      <Box p={4} borderWidth={1} borderRadius="md" bg="white" h={"100%"}>
+        <Text fontSize="xl" mb={4} fontWeight="bold">
+          Lista de Tarefas ({total})
+        </Text>
 
-      {loading ? (
-        <Stack align="center" py={10}>
-          <Spinner size="lg" color="teal.500" />
-        </Stack>
-      ) : (
-        <VStack align="stretch" gap={3}>
-          {tasks.length === 0 && (
-            <Text color="gray.500" textAlign="center">
-              Nenhuma tarefa encontrada.
-            </Text>
-          )}
+        {loading ? (
+          <Stack align="center" py={10}>
+            <Spinner size="lg" color="teal.500" />
+          </Stack>
+        ) : (
+          <Grid
+            templateColumns={{
+              base: "1fr",
+              md: "repeat(2, 1fr)",
+              xl: "repeat(4, 1fr)",
+            }}
+            gap={3}
+          >
+            {tasks.length === 0 && (
+              <Text color="gray.500" textAlign="center">
+                Nenhuma tarefa encontrada.
+              </Text>
+            )}
 
-          {tasks.map((task) => (
-            <Box
-              key={task.id}
-              p={3}
-              borderWidth={1}
-              borderRadius="md"
-              bg="gray.50"
-            >
-              <HStack justify="space-between">
-                <Text fontWeight="semibold">{task.title}</Text>
-                <HStack>
-                  <Badge
-                    colorScheme={
-                      task.status === "DONE"
-                        ? "green"
-                        : task.status === "DOING"
-                        ? "yellow"
-                        : "gray"
-                    }
+            {tasks.map((task) => (
+              <Box
+                key={task.id}
+                p={2}
+                borderWidth={1}
+                borderRadius="md"
+                bg="gray.300"
+                shadow={"lg"}
+              >
+                <HStack gap={2} align="start">
+                  <Checkbox.Root
+                    bg={"white"}
+                    rounded={"md"}
+                    checked={task.status === "DONE"}
+                    onCheckedChange={() => {}}
                   >
-                    {task.status}
-                  </Badge>
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control />
+                  </Checkbox.Root>
+                  <VStack align="start" mt={2} gap={0}>
+                    <Text fontWeight="semibold">{task.title}</Text>
+                    <Text fontSize="sm" color="gray.800">
+                      {task.description}
+                    </Text>
+                  </VStack>
+                </HStack>
+                <HStack mt={2} gap={4}>
                   <Badge
-                    colorScheme={
+                    fontSize="xs"
+                    color="white"
+                    bg={
                       task.priority === "HIGH"
-                        ? "red"
+                        ? "red.500"
                         : task.priority === "MEDIUM"
-                        ? "yellow"
-                        : "blue"
+                        ? "yellow.500"
+                        : "green.500"
                     }
+                    p={1}
                   >
-                    {task.priority}
+                    <Flag size={16} />
+                    {priorityMapped[task.priority]}
+                  </Badge>
+                  <Badge fontSize="xs" color="black" bg={"gray.100"} p={1}>
+                    {task.status == "DONE" ? (
+                      <Check size={16} />
+                    ) : (
+                      <Clock size={16} />
+                    )}
+                    {statusMapped[task.status]}
                   </Badge>
                 </HStack>
-              </HStack>
-              <Text fontSize="sm" color="gray.600" mt={1}>
-                {task.description}
-              </Text>
-              {task.dueDate && (
-                <Text fontSize="xs" color="gray.500" mt={1}>
-                  Vencimento: {new Date(task.dueDate).toLocaleDateString()}
-                </Text>
-              )}
-            </Box>
-          ))}
-        </VStack>
-      )}
-
+                {task.dueDate && (
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Vencimento: {new Date(task.dueDate).toLocaleDateString()}
+                  </Text>
+                )}
+              </Box>
+            ))}
+          </Grid>
+        )}
+      </Box>
       {total > 0 && (
-        <Stack mt={6} align="center">
+        <Stack mb={3} align="center">
           <Pagination.Root
             count={total}
-            pageSize={PAGE_SIZE} 
-            page={page} 
+            pageSize={PAGE_SIZE}
+            page={page}
             onPageChange={(e) => setPage(e.page)}
           >
             <HStack gap={2}>
@@ -180,7 +215,7 @@ const TaskList: React.FC = () => {
           </Pagination.Root>
         </Stack>
       )}
-    </Box>
+    </Flex>
   );
 };
 
