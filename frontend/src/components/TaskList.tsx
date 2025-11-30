@@ -1,7 +1,7 @@
 import {
   Badge,
   Box,
-  Checkbox,
+  Button,
   Flex,
   Grid,
   HStack,
@@ -11,7 +11,14 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { Check, ChevronLeft, ChevronRight, Clock, Flag } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Flag,
+  RefreshCcw,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 
@@ -40,36 +47,36 @@ type TasksResponse = {
   message: string;
 };
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 8;
 
 const useTasks = (page: number) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(
+        `http://localhost:3000/tasks?page=${page}&perPage=${PAGE_SIZE}`
+      );
+
+      const json: TasksResponse = response.data;
+
+      setTasks(json.data);
+      setTotal(json.meta.total);
+    } catch (error) {
+      console.error("Erro ao buscar tarefas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(
-          `http://localhost:3000/tasks?page=${page}&perPage=${PAGE_SIZE}`
-        );
-
-        const json: TasksResponse = response.data;
-
-        setTasks(json.data);
-        setTotal(json.meta.total);
-      } catch (error) {
-        console.error("Erro ao buscar tarefas:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTasks();
   }, [page]);
 
-  return { tasks, total, loading };
+  return { tasks, total, loading, fetchTasks };
 };
 
 const statusMapped = {
@@ -84,58 +91,116 @@ const priorityMapped = {
   HIGH: "ALTA",
 };
 
+const priorityColor = {
+  LOW: {
+    text: "white",
+    bg: "green.500",
+  },
+  MEDIUM: {
+    text: "white",
+    bg: "yellow.500",
+  },
+  HIGH: {
+    text: "white",
+    bg: "red.500",
+  },
+};
+
+const statusColor = {
+  TO_DO: {
+    text: "black",
+    bg: "gray.300",
+  },
+  DOING: {
+    text: "white",
+    bg: "yellow.400",
+  },
+};
+
 const TaskList: React.FC = () => {
   const [page, setPage] = useState(1);
-  const { tasks, total, loading } = useTasks(page);
+  const { tasks, total, loading, fetchTasks } = useTasks(page);
 
   return (
     <Flex direction={"column"} flex={1} overflow="hidden">
       <Box p={4} borderWidth={1} borderRadius="md" bg="white" h={"100%"}>
-        <Text fontSize="xl" mb={4} fontWeight="bold">
-          Lista de Tarefas ({total})
-        </Text>
+        <Flex justifyContent="space-between" alignItems="center" mb={4}>
+          <Text fontSize="xl" mb={4} fontWeight="bold">
+            Lista de Tarefas ({total})
+          </Text>
+          <Button
+            color="black"
+            bg="transparent"
+            onClick={fetchTasks}
+            _hover={{ bg: "gray.200" }}
+          >
+            <RefreshCcw size={16} />
+          </Button>
+        </Flex>
 
         {loading ? (
           <Stack align="center" py={10}>
             <Spinner size="lg" color="teal.500" />
           </Stack>
+        ) : tasks.length === 0 ? (
+          <Text color="gray.500" textAlign="center" mt={10}>
+            Nenhuma tarefa encontrada.
+          </Text>
         ) : (
           <Grid
             templateColumns={{
               base: "1fr",
               md: "repeat(2, 1fr)",
-              xl: "repeat(4, 1fr)",
+              xl: "repeat(4,1fr)",
             }}
-            gap={3}
+            gap={5}
           >
-            {tasks.length === 0 && (
-              <Text color="gray.500" textAlign="center">
-                Nenhuma tarefa encontrada.
-              </Text>
-            )}
-
             {tasks.map((task) => (
-              <Box
+              <Flex
                 key={task.id}
                 p={2}
+                _hover={{ bg: "gray.200", cursor: "pointer",scale:1.02 }}
+                transition={"all 0.2s ease-in-out"}
+                minW="0"
                 borderWidth={1}
                 borderRadius="md"
-                bg="gray.300"
+                bg="gray.100"
                 shadow={"lg"}
+                direction={"column"}
+                position={"relative"}
+                justifyContent={"space-between"}
               >
-                <HStack gap={2} align="start">
-                  <Checkbox.Root
-                    bg={"white"}
-                    rounded={"md"}
-                    checked={task.status === "DONE"}
-                    onCheckedChange={() => {}}
+                {task.completedAt && (
+                  <Box
+                    position={"absolute"}
+                    top={-3}
+                    right={-2}
+                    p={0.1}
+                    border={"2px solid green"}
+                    borderRadius="full"
+                    bg="green.50"
                   >
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control />
-                  </Checkbox.Root>
+                    <Check size={20} color={"green"} />
+                  </Box>
+                )}
+                <HStack gap={2} align="start">
                   <VStack align="start" mt={2} gap={0}>
-                    <Text fontWeight="semibold">{task.title}</Text>
-                    <Text fontSize="sm" color="gray.800">
+                    <Text
+                      fontWeight="semibold"
+                      wordBreak={"break-word"}
+                      lineClamp={1}
+                      title={task.title}
+                    >
+                      {task.title}
+                    </Text>
+                    <Text
+                      ml={2}
+                      fontSize="xs"
+                      title={task.description}
+                      color="gray.800"
+                      wordBreak="break-word"
+                      lineClamp={3}
+                    >
                       {task.description}
                     </Text>
                   </VStack>
@@ -143,40 +208,37 @@ const TaskList: React.FC = () => {
                 <HStack mt={2} gap={4}>
                   <Badge
                     fontSize="xs"
-                    color="white"
-                    bg={
-                      task.priority === "HIGH"
-                        ? "red.500"
-                        : task.priority === "MEDIUM"
-                        ? "yellow.500"
-                        : "green.500"
-                    }
+                    color={priorityColor[task.priority].text}
+                    bg={priorityColor[task.priority].bg}
                     p={1}
                   >
                     <Flag size={16} />
                     {priorityMapped[task.priority]}
                   </Badge>
-                  <Badge fontSize="xs" color="black" bg={"gray.100"} p={1}>
-                    {task.status == "DONE" ? (
-                      <Check size={16} />
-                    ) : (
+                  {task.status != "DONE" && (
+                    <Badge
+                      fontSize="xs"
+                      color={statusColor[task.status].text}
+                      bg={statusColor[task.status].bg}
+                      p={1}
+                    >
                       <Clock size={16} />
-                    )}
-                    {statusMapped[task.status]}
-                  </Badge>
+                      {statusMapped[task.status]}
+                    </Badge>
+                  )}
                 </HStack>
                 {task.dueDate && (
                   <Text fontSize="xs" color="gray.500" mt={1}>
                     Vencimento: {new Date(task.dueDate).toLocaleDateString()}
                   </Text>
                 )}
-              </Box>
+              </Flex>
             ))}
           </Grid>
         )}
       </Box>
       {total > 0 && (
-        <Stack mb={3} align="center">
+        <Stack my={3} align="center">
           <Pagination.Root
             count={total}
             pageSize={PAGE_SIZE}
@@ -184,7 +246,7 @@ const TaskList: React.FC = () => {
             onPageChange={(e) => setPage(e.page)}
           >
             <HStack gap={2}>
-              <Pagination.PrevTrigger>
+              <Pagination.PrevTrigger _hover={{ bg: "gray.200" }}>
                 <ChevronLeft size={18} />
               </Pagination.PrevTrigger>
 
@@ -200,6 +262,9 @@ const TaskList: React.FC = () => {
                         key={index}
                         type="page"
                         value={pageItem.value}
+                        _hover={{ bg: "gray.200" }}
+                        p={2}
+                        rounded={"md"}
                       >
                         {pageItem.value}
                       </Pagination.Item>
@@ -208,7 +273,7 @@ const TaskList: React.FC = () => {
                 }
               </Pagination.Context>
 
-              <Pagination.NextTrigger>
+              <Pagination.NextTrigger _hover={{ bg: "gray.200" }}>
                 <ChevronRight size={18} />
               </Pagination.NextTrigger>
             </HStack>
