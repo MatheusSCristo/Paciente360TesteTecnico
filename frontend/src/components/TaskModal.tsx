@@ -31,12 +31,15 @@ type CreateTaskSchema = z.infer<typeof createTaskSchema>;
 
 export interface Task extends CreateTaskSchema {
   id?: string;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTask?: Task;
+  initialTask: Task | null;
 }
 
 const defaultValues: CreateTaskSchema = {
@@ -62,8 +65,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
     defaultValues: initialTask || defaultValues,
   });
 
-  
-  
   useEffect(() => {
     if (isOpen) {
       reset(
@@ -84,8 +85,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
     onClose();
   };
 
-
-  
   const onFormSubmit: SubmitHandler<CreateTaskSchema> = async (data) => {
     const formData = {
       ...data,
@@ -93,8 +92,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
       priority: (data.priority as PriorityLevel) || null,
       dueDate: data.dueDate ? data.dueDate : null,
     };
-
-    const promise = api.post("http://localhost:3000/tasks", formData);
+    let promise;
+    if (initialTask) {
+      promise = api.put(
+        `http://localhost:3000/tasks/${initialTask.id}`,
+        formData
+      );
+    } else {
+      promise = api.post("http://localhost:3000/tasks", formData);
+    }
 
     toaster.promise(promise, {
       success: {
@@ -194,7 +200,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 <Field.Root invalid={!!errors.priority}>
                   <Field.Label>Prioridade</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field p={3} {...register("priority")}>
+                    <NativeSelect.Field pl={3} {...register("priority")}>
                       <option value={PriorityLevel.LOW}>Baixa</option>
                       <option value={PriorityLevel.MEDIUM}>Média</option>
                       <option value={PriorityLevel.HIGH}>Alta</option>
