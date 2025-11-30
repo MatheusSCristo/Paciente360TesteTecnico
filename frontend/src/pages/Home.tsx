@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <main style={{
       width: "100%",
-      height: "100vh",
+      minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
       gap: "16px"

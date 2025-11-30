@@ -9,6 +9,7 @@ import {
   Spinner,
   Stack,
   Text,
+  useBreakpointValue,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -47,9 +48,8 @@ type TasksResponse = {
   message: string;
 };
 
-const PAGE_SIZE = 8;
 
-const useTasks = (page: number) => {
+const useTasks = (page: number, itemsPerPage: number) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,7 @@ const useTasks = (page: number) => {
     setLoading(true);
     try {
       const response = await api.get(
-        `http://localhost:3000/tasks?page=${page}&perPage=${PAGE_SIZE}`
+        `http://localhost:3000/tasks?page=${page}&perPage=${itemsPerPage}`
       );
 
       const json: TasksResponse = response.data;
@@ -74,7 +74,7 @@ const useTasks = (page: number) => {
 
   useEffect(() => {
     fetchTasks();
-  }, [page]);
+  }, [page,itemsPerPage]);
 
   return { tasks, total, loading, fetchTasks };
 };
@@ -119,7 +119,8 @@ const statusColor = {
 
 const TaskList: React.FC = () => {
   const [page, setPage] = useState(1);
-  const { tasks, total, loading, fetchTasks } = useTasks(page);
+  const itemsPerPage = useBreakpointValue({ base: 3, md: 8 }) || 3;
+  const { tasks, total, loading, fetchTasks } = useTasks(page, itemsPerPage);
 
   return (
     <Flex direction={"column"} flex={1} overflow="hidden">
@@ -241,7 +242,7 @@ const TaskList: React.FC = () => {
         <Stack my={3} align="center">
           <Pagination.Root
             count={total}
-            pageSize={PAGE_SIZE}
+            pageSize={itemsPerPage}
             page={page}
             onPageChange={(e) => setPage(e.page)}
           >
