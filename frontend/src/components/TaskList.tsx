@@ -132,7 +132,10 @@ const TaskList: React.FC = () => {
           <Button
             color="black"
             bg="transparent"
-            onClick={fetchTasks}
+            onClick={()=>{
+              setPage(1);
+              fetchTasks();
+            }}
             _hover={{ bg: "gray.200" }}
           >
             <RefreshCcw size={16} />
@@ -230,7 +233,7 @@ const TaskList: React.FC = () => {
                 </HStack>
                 {task.dueDate && (
                   <Text fontSize="xs" color="gray.500" mt={1}>
-                    Vencimento: {new Date(task.dueDate).toLocaleDateString()}
+                    Entrega: {new Date(task.dueDate).toLocaleDateString()}
                   </Text>
                 )}
               </Flex>
@@ -264,8 +267,13 @@ const TaskList: React.FC = () => {
                         type="page"
                         value={pageItem.value}
                         _hover={{ bg: "gray.200" }}
-                        p={2}
+                        display={"flex"}
+                        alignItems={"center"}
+                        justifyContent={"center"}
+                        w={8}
+                        h={8}
                         rounded={"md"}
+                        bg={pageItem.value==page ? "gray.200" : "transparent"}
                       >
                         {pageItem.value}
                       </Pagination.Item>

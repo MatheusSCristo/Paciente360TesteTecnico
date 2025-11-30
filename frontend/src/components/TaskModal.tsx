@@ -1,17 +1,19 @@
 import {
-    Button,
-    Dialog,
-    Field,
-    Input,
-    NativeSelect,
-    Stack,
-    Textarea,
+  Button,
+  Dialog,
+  Field,
+  Input,
+  NativeSelect,
+  Stack,
+  Textarea,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import React, { useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
+import api from "../api/axios";
+import { toaster } from "../components/ui/toaster";
 import { PriorityLevel, TaskStatus } from "../utils/enums";
 
 const createTaskSchema = z.object({
@@ -60,6 +62,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
     defaultValues: initialTask || defaultValues,
   });
 
+  
+  
   useEffect(() => {
     if (isOpen) {
       reset(
@@ -75,15 +79,47 @@ const TaskModal: React.FC<TaskModalProps> = ({
     }
   }, [isOpen, initialTask, reset]);
 
-  const onFormSubmit: SubmitHandler<CreateTaskSchema> = (data) => {
-    console.log("Form Data:", data);
-
-    handleClose();
-  };
-
   const handleClose = () => {
     reset(defaultValues);
     onClose();
+  };
+
+
+  
+  const onFormSubmit: SubmitHandler<CreateTaskSchema> = async (data) => {
+    const formData = {
+      ...data,
+      status: (data.status as TaskStatus) || null,
+      priority: (data.priority as PriorityLevel) || null,
+      dueDate: data.dueDate ? data.dueDate : null,
+    };
+
+    const promise = api.post("http://localhost:3000/tasks", formData);
+
+    toaster.promise(promise, {
+      success: {
+        title: initialTask ? "Tarefa atualizada!" : "Tarefa criada!",
+        description: "A operação foi realizada com sucesso.",
+      },
+      error: (err: unknown) => ({
+        title: "Erro ao salvar",
+        description:
+          (err as { response: { data: { message: string } } })?.response?.data
+            ?.message || "Ocorreu um erro inesperado.",
+      }),
+      loading: {
+        title: "Salvando...",
+        description: "Por favor, aguarde.",
+      },
+    });
+
+    try {
+      await promise;
+      window.location.reload();
+      handleClose();
+    } catch {
+      console.error("Erro ao salvar tarefa");
+    }
   };
 
   return (
@@ -158,7 +194,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 <Field.Root invalid={!!errors.priority}>
                   <Field.Label>Prioridade</Field.Label>
                   <NativeSelect.Root>
-                    <NativeSelect.Field pl={3} {...register("priority")}>
+                    <NativeSelect.Field p={3} {...register("priority")}>
                       <option value={PriorityLevel.LOW}>Baixa</option>
                       <option value={PriorityLevel.MEDIUM}>Média</option>
                       <option value={PriorityLevel.HIGH}>Alta</option>
@@ -172,7 +208,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
                 <Field.Root invalid={!!errors.dueDate}>
                   <Field.Label>Data Entrega</Field.Label>
-                  <Input type="date" pl={3} {...register("dueDate")} />
+                  <Input type="date" px={3} {...register("dueDate")} />
                   {errors.dueDate && (
                     <Field.ErrorText>{errors.dueDate.message}</Field.ErrorText>
                   )}

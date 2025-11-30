@@ -30,7 +30,7 @@ const Dashboard = () => {
           <Button
             bg={"gray.600"}
             size="lg"
-            p= {6}
+            p={2}
             display={{ base: "none", md: "flex" }}
             rounded={10}
             onClick={() => setTaskModalOpen(true)}
@@ -52,10 +52,20 @@ const Dashboard = () => {
             <Plus size={20} />
           </Button>
         </Flex>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap={{
-          base: 4, md: 6
-        }} w="100%">
-          <Stat.Root bg="gray.100" p={{ base: 3, md: 6 }} borderRadius={12} boxShadow="md">
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
+          gap={{
+            base: 4,
+            md: 6,
+          }}
+          w="100%"
+        >
+          <Stat.Root
+            bg="gray.100"
+            p={{ base: 3, md: 6 }}
+            borderRadius={12}
+            boxShadow="md"
+          >
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Pendentes
             </Stat.Label>
@@ -66,7 +76,12 @@ const Dashboard = () => {
             </Skeleton>
           </Stat.Root>
 
-          <Stat.Root bg="gray.100" p={{ base: 3, md: 6 }} borderRadius={12} boxShadow="md">
+          <Stat.Root
+            bg="gray.100"
+            p={{ base: 3, md: 6 }}
+            borderRadius={12}
+            boxShadow="md"
+          >
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Atrasadas
             </Stat.Label>
@@ -77,7 +92,12 @@ const Dashboard = () => {
             </Skeleton>
           </Stat.Root>
 
-          <Stat.Root bg="gray.100" p={{ base: 3, md: 6 }} borderRadius={12} boxShadow="md">
+          <Stat.Root
+            bg="gray.100"
+            p={{ base: 3, md: 6 }}
+            borderRadius={12}
+            boxShadow="md"
+          >
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Concluídas na Semana
             </Stat.Label>
