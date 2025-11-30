@@ -14,8 +14,8 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto) {
     const { title, description, priority, dueDate, status } = createTaskDto;
 
+    const dueDateObj = new Date(dueDate || '');
     if (dueDate) {
-      const dueDateObj = new Date(dueDate);
       if (isNaN(dueDateObj.getTime())) {
         throw new InvalidDateException('Data limite inválida');
       }
@@ -28,7 +28,7 @@ export class TasksService {
       title,
       description,
       priority,
-      dueDate,
+      dueDate: dueDate ? dueDateObj : undefined,
       status,
     });
 
