@@ -16,15 +16,17 @@ export class Task {
     description,
     priority,
     dueDate,
+    status,
   }: {
     title: string;
     description?: string;
     priority?: PriorityLevel;
     dueDate?: Date;
+    status?: TaskStatus;
   }) {
     this.title = title;
     this.description = description || '';
-    this.status = TaskStatus.TO_DO;
+    this.status = status || TaskStatus.TO_DO;
     this.dueDate = dueDate || null;
     this.priority = priority || PriorityLevel.MEDIUM;
     this.completedAt = null;

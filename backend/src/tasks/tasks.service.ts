@@ -12,7 +12,7 @@ export class TasksService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createTaskDto: CreateTaskDto) {
-    const { title, description, priority, dueDate } = createTaskDto;
+    const { title, description, priority, dueDate, status } = createTaskDto;
 
     if (dueDate) {
       const dueDateObj = new Date(dueDate);
@@ -29,6 +29,7 @@ export class TasksService {
       description,
       priority,
       dueDate,
+      status,
     });
 
     const createdTask = await this.prismaService.task.create({
