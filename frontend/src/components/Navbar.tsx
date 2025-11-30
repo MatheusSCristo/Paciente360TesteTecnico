@@ -30,7 +30,7 @@ export default function Navbar() {
       bg="gray.600"
       color="white"
     >
-      <Heading size={'2xl'} letterSpacing="tighter" color="white">
+      <Heading size={{ md: 'xl', base: '2xl', "2xl": '2xl' }} letterSpacing="tighter" color="white">
         Tasks
       </Heading>
 
@@ -39,7 +39,7 @@ export default function Navbar() {
           <Link
             key={route.path}
             href={route.path}
-            fontSize="lg"
+            fontSize={{md:"sm","2xl":"md"}}
             color={"white"}
             fontWeight={path === route.path ? "bold" : "normal"}
             padding={2}
