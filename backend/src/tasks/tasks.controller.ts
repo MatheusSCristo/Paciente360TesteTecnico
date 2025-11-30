@@ -6,8 +6,8 @@ import {
   Get,
   HttpCode,
   Param,
-  Patch,
   Post,
+  Put,
   Query,
   ValidationPipe,
 } from '@nestjs/common';
@@ -40,7 +40,7 @@ export class TasksController {
     return this.tasksService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @HttpCode(200)
   update(
     @Param('id') id: string,

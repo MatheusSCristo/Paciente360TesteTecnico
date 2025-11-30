@@ -95,6 +95,16 @@ export class TasksService {
       throw new TaskNotFoundException();
     }
 
+    const dueDateObj = new Date(updateTaskDto.dueDate || '');
+    if (updateTaskDto.dueDate) {
+      if (isNaN(dueDateObj.getTime())) {
+        throw new InvalidDateException('Data limite inválida');
+      }
+      if (dueDateObj < new Date()) {
+        throw new InvalidDateException('A data limite não pode ser no passado');
+      }
+      updateTaskDto.dueDate = dueDateObj;
+    }
     const updatedTask = await this.prismaService.task.update({
       where: { id },
       data: updateTaskDto,
