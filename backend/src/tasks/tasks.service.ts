@@ -3,7 +3,7 @@ import { ApiResponse } from '../common/responses/ApiResponse';
 import { PrismaService } from '../prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { Task } from './entities/task.entity';
+import { Task, TaskStatus } from './entities/task.entity';
 import { InvalidDateException } from './exceptions/InvalidDateException';
 import { TaskNotFoundException } from './exceptions/TaskNotFoundException';
 
@@ -105,9 +105,21 @@ export class TasksService {
       }
       updateTaskDto.dueDate = dueDateObj;
     }
+
+    let completedAt: Date | null = null;
+    if (updateTaskDto.status == TaskStatus.DONE) {
+      completedAt = new Date();
+    }
+    if (task.status === 'DONE' && updateTaskDto.status !== TaskStatus.DONE) {
+      completedAt = null;
+    }
+
     const updatedTask = await this.prismaService.task.update({
       where: { id },
-      data: updateTaskDto,
+      data: {
+        ...updateTaskDto,
+        completedAt,
+      },
     });
 
     return ApiResponse.success({
@@ -131,6 +143,51 @@ export class TasksService {
 
     return ApiResponse.success({
       message: 'Tarefa deletada com sucesso',
+    });
+  }
+
+  async getStats() {
+    const now = new Date();
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+
+    const [pending, overdue, completedThisWeek] = await Promise.all([
+      this.prismaService.task.count({
+        where: {
+          status: {
+            not: TaskStatus.DONE,
+          },
+          completedAt: null,
+        },
+      }),
+      this.prismaService.task.count({
+        where: {
+          status: {
+            not: TaskStatus.DONE,
+          },
+          completedAt: null,
+          dueDate: {
+            lt: now,
+          },
+        },
+      }),
+      this.prismaService.task.count({
+        where: {
+          completedAt: {
+            gte: oneWeekAgo,
+            lte: now,
+          },
+        },
+      }),
+    ]);
+
+    return ApiResponse.success({
+      message: 'Estatísticas recuperadas com sucesso',
+      data: {
+        pending,
+        overdue,
+        completedThisWeek,
+      },
     });
   }
 }

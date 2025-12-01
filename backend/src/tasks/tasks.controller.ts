@@ -34,6 +34,12 @@ export class TasksController {
     return this.tasksService.findAll(Number(page), Number(perPage));
   }
 
+  @Get('stats')
+  @HttpCode(200)
+  getStats() {
+    return this.tasksService.getStats();
+  }
+
   @Get(':id')
   @HttpCode(200)
   findOne(@Param('id') id: string) {
