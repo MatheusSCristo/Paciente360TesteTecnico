@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import {
-    PostgreSqlContainer,
-    StartedPostgreSqlContainer,
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { execSync } from 'child_process';
 
