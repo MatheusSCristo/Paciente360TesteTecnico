@@ -21,52 +21,8 @@ import {
   RefreshCcw,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useTasks } from "../hooks/useTasks";
 import TaskModal, { type Task } from "./TaskModal";
-
-
-type Meta = {
-  total: number;
-  perPage: number;
-  totalPages: number;
-  page: number;
-};
-
-type TasksResponse = {
-  data: Task[];
-  meta: Meta;
-  message: string;
-};
-
-const useTasks = (page: number, itemsPerPage: number) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get(
-        `http://localhost:3000/tasks?page=${page}&perPage=${itemsPerPage}`
-      );
-
-      const json: TasksResponse = response.data;
-
-      setTasks(json.data);
-      setTotal(json.meta.total);
-    } catch (error) {
-      console.error("Erro ao buscar tarefas:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, [page, itemsPerPage]);
-
-  return { tasks, total, loading, fetchTasks };
-};
 
 const statusMapped = {
   TO_DO: "PENDENTE",
@@ -107,11 +63,17 @@ const statusColor = {
 };
 
 const TaskList: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const itemsPerPage = useBreakpointValue({ base: 3, md: 8 }) || 3;
-  const { tasks, total, loading, fetchTasks } = useTasks(page, itemsPerPage);
+  const breakpointValue = useBreakpointValue({ base: 3, md: 8 });
+  const { tasks, total, loading, page, setPage, itemsPerPage, setItemsPerPage, refreshAll } = useTasks();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    if (breakpointValue) {
+      setItemsPerPage(breakpointValue);
+    }
+  }, [breakpointValue, setItemsPerPage]);
+
 
   return (
     <>
@@ -126,15 +88,20 @@ const TaskList: React.FC = () => {
       <Flex direction={"column"} flex={1} overflow="hidden">
         <Box p={4} borderWidth={1} borderRadius="md" bg="white" h={"100%"}>
           <Flex justifyContent="space-between" alignItems="center" mb={4}>
-            <Text fontSize="xl" mb={4} fontWeight="bold">
-              Lista de Tarefas ({total})
-            </Text>
+            <Flex align="start" direction={"column"}>
+              <Text fontSize="xl" fontWeight="bold">
+                Lista de Tarefas ({total})
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                Exibindo {tasks.length} de {total} tarefas
+              </Text>
+            </Flex>
             <Button
               color="black"
               bg="transparent"
               onClick={() => {
                 setPage(1);
-                fetchTasks();
+                refreshAll();
               }}
               _hover={{ bg: "gray.200" }}
             >
@@ -192,15 +159,42 @@ const TaskList: React.FC = () => {
                     </Box>
                   )}
                   <HStack gap={2} align="start">
-                    <VStack align="start" mt={2} gap={0}>
-                      <Text
-                        fontWeight="semibold"
-                        wordBreak={"break-word"}
-                        lineClamp={1}
-                        title={task.title}
+                    <VStack align="start" mt={2} gap={0} w={"full"}>
+                      <HStack
+                        justify="space-between"
+                        align={"start"}
+                        gap={1}
+                        w="full"
                       >
-                        {task.title}
-                      </Text>
+                        <Text
+                          fontWeight="semibold"
+                          wordBreak={"break-word"}
+                          lineClamp={2}
+                          title={task.title}
+                        >
+                          {task.title}
+                        </Text>
+                        {!task.completedAt && task.dueDate && (
+                          <Text
+                            fontSize="xs"
+                            color="gray.500"
+                            textWrap={"nowrap"}
+                          >
+                            Entrega:{" "}
+                            {new Date(task.dueDate).toLocaleDateString()}
+                          </Text>
+                        )}
+                        {task.completedAt && (
+                          <Text
+                            fontSize="xs"
+                            color="green.500"
+                            textWrap={"nowrap"}
+                          >
+                            Concluída em:{" "}
+                            {new Date(task.completedAt).toLocaleDateString()}
+                          </Text>
+                        )}
+                      </HStack>
                       <Text
                         ml={2}
                         fontSize="xs"
@@ -235,11 +229,15 @@ const TaskList: React.FC = () => {
                       </Badge>
                     )}
                   </HStack>
-                  {task.dueDate && (
-                    <Text fontSize="xs" color="gray.500" mt={1}>
-                      Entrega: {new Date(task.dueDate).toLocaleDateString()}
+                  <Flex justifyContent={"space-between"}>
+                    <Text fontSize="xs" color="gray.500">
+                      Criada em: {new Date(task.createdAt).toLocaleDateString()}
                     </Text>
-                  )}
+                    <Text fontSize="xs" color="gray.500">
+                      Atualizada em:{" "}
+                      {new Date(task.updatedAt).toLocaleDateString()}
+                    </Text>
+                  </Flex>
                 </Flex>
               ))}
             </Grid>

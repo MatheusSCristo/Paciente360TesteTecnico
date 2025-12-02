@@ -2,6 +2,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { Toaster } from "./components/ui/toaster";
+import { TaskProvider } from "./contexts/TaskContext";
 import Home from "./pages/Home";
 
 function Calendario() {
@@ -16,12 +17,14 @@ function Calendario() {
 function App() {
   return (
     <BrowserRouter>
-    <Toaster/>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/calendario" element={<Calendario />} />
-      </Routes>
+      <TaskProvider>
+        <Toaster/>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home/>} />
+          <Route path="/calendario" element={<Calendario />} />
+        </Routes>
+      </TaskProvider>
     </BrowserRouter>
   );
 }

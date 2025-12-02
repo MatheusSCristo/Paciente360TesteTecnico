@@ -5,16 +5,17 @@ import {
   SimpleGrid,
   Skeleton,
   Stat,
-  Text, // Na v3 importamos apenas o componente pai
+  Text
 } from "@chakra-ui/react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import useDashboardStats from "../hooks/useDashboardStats";
+import { useTasks } from "../hooks/useTasks";
 import TaskModal from "./TaskModal";
 
 const Dashboard = () => {
-  const { stats, loading } = useDashboardStats();
+  const { stats, statsLoading} = useTasks();
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  
   return (
     <>
       <Flex direction="column" align="left" p={{ base: 4, md: 8 }}>
@@ -69,7 +70,7 @@ const Dashboard = () => {
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Pendentes
             </Stat.Label>
-            <Skeleton loading={loading} borderRadius={12} w={"20%"}>
+            <Skeleton loading={statsLoading} borderRadius={12} w={"20%"}>
               <Stat.ValueText fontSize="3xl" color="blue.500">
                 {stats?.pending ?? 0}
               </Stat.ValueText>
@@ -85,7 +86,7 @@ const Dashboard = () => {
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Atrasadas
             </Stat.Label>
-            <Skeleton loading={loading} borderRadius={12} w={"20%"}>
+            <Skeleton loading={statsLoading} borderRadius={12} w={"20%"}>
               <Stat.ValueText fontSize="3xl" color="red.500">
                 {stats?.overdue ?? 0}
               </Stat.ValueText>
@@ -101,7 +102,7 @@ const Dashboard = () => {
             <Stat.Label fontSize={{ base: "md", md: "lg" }} color="gray.600">
               Tarefas Concluídas na Semana
             </Stat.Label>
-            <Skeleton loading={loading} borderRadius={12} w={"20%"}>
+            <Skeleton loading={statsLoading} borderRadius={12} w={"20%"}>
               <Stat.ValueText fontSize="3xl" color="green.500">
                 {stats?.completedThisWeek ?? 0}
               </Stat.ValueText>
@@ -112,6 +113,7 @@ const Dashboard = () => {
       <TaskModal
         isOpen={taskModalOpen}
         onClose={() => setTaskModalOpen(false)}
+        initialTask={null}
       />
     </>
   );

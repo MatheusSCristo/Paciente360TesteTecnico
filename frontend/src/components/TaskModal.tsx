@@ -14,6 +14,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import api from "../api/axios";
 import { toaster } from "../components/ui/toaster";
+import { useTasks } from "../hooks/useTasks";
 import { PriorityLevel, TaskStatus } from "../utils/enums";
 
 const createTaskSchema = z.object({
@@ -55,6 +56,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   initialTask,
 }) => {
+  const { refreshAll } = useTasks();
   const {
     register,
     handleSubmit,
@@ -94,12 +96,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
     };
     let promise;
     if (initialTask) {
-      promise = api.put(
-        `http://localhost:3000/tasks/${initialTask.id}`,
-        formData
-      );
+      promise = api.put(`/tasks/${initialTask.id}`, formData);
     } else {
-      promise = api.post("http://localhost:3000/tasks", formData);
+      promise = api.post("/tasks", formData);
     }
 
     toaster.promise(promise, {
@@ -121,10 +120,41 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
     try {
       await promise;
-      window.location.reload();
+      refreshAll();
       handleClose();
     } catch {
       console.error("Erro ao salvar tarefa");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initialTask) return;
+
+    const promise = api.delete(`/tasks/${initialTask.id}`);
+
+    toaster.promise(promise, {
+      success: {
+        title: "Tarefa excluída!",
+        description: "A tarefa foi removida com sucesso.",
+      },
+      error: (err: unknown) => ({
+        title: "Erro ao excluir",
+        description:
+          (err as { response: { data: { message: string } } })?.response?.data
+            ?.message || "Ocorreu um erro inesperado.",
+      }),
+      loading: {
+        title: "Excluindo...",
+        description: "Por favor, aguarde.",
+      },
+    });
+
+    try {
+      await promise;
+      refreshAll();
+      handleClose();
+    } catch {
+      console.error("Erro ao excluir tarefa");
     }
   };
 
@@ -222,27 +252,43 @@ const TaskModal: React.FC<TaskModalProps> = ({
               </Stack>
             </Dialog.Body>
 
-            <Dialog.Footer mt={6} justifyContent="flex-end" gap={3}>
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                p={3}
-                rounded={12}
-                w={"1/5"}
-                _hover={{ bg: "blackAlpha.500", color: "black" }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                loading={isSubmitting}
-                p={3}
-                rounded={12}
-                w={"1/5"}
-                _hover={{ bg: "blackAlpha.500", color: "black" }}
-              >
-                {initialTask ? "Salvar" : "Criar"}
-              </Button>
+            <Dialog.Footer mt={6} justifyContent="space-between" gap={3}>
+              <Stack direction="row" gap={2}>
+                {initialTask && (
+                  <>
+                    <Button
+                      colorScheme="red"
+                      variant="outline"
+                      onClick={handleDelete}
+                      p={3}
+                      rounded={12}
+                      _hover={{ bg: "red.50" }}
+                    >
+                      Excluir
+                    </Button>
+                  </>
+                )}
+              </Stack>
+              <Stack direction="row" gap={2}>
+                <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  p={3}
+                  rounded={12}
+                  _hover={{ bg: "blackAlpha.500", color: "black" }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  loading={isSubmitting}
+                  p={3}
+                  rounded={12}
+                  _hover={{ bg: "blackAlpha.500", color: "black" }}
+                >
+                  {initialTask ? "Salvar" : "Criar"}
+                </Button>
+              </Stack>
             </Dialog.Footer>
           </form>
         </Dialog.Content>
