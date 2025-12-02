@@ -32,11 +32,11 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./backend
-        run: npm test -- --testPathPattern=unit --coverage
+        run: npm test -- --testPathPatterns=unit --coverage
 
       - name: Run integration tests (with Testcontainers)
         working-directory: ./backend
-        run: npm test -- --testPathPattern=integration
+        run: npm test -- --testPathPatterns=integration
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
