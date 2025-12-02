@@ -32,6 +32,8 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
         run: npm test -- --testPathPatterns=unit --coverage
 
       - name: Set up Docker Buildx
@@ -39,6 +41,8 @@ jobs:
 
       - name: Run integration tests (with Testcontainers)
         working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
         run: npm test -- --testPathPatterns=integration
 
       - name: Upload coverage to Codecov
