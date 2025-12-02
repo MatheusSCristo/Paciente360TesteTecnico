@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Query,
@@ -42,14 +43,30 @@ export class TasksController {
 
   @Get(':id')
   @HttpCode(200)
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('ID inválido. O ID deve ser um UUID válido.'),
+      }),
+    )
+    id: string,
+  ) {
     return this.tasksService.findOne(id);
   }
 
   @Put(':id')
   @HttpCode(200)
   update(
-    @Param('id') id: string,
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('ID inválido. O ID deve ser um UUID válido.'),
+      }),
+    )
+    id: string,
     @Body(
       new ValidationPipe({
         whitelist: true,
@@ -66,7 +83,16 @@ export class TasksController {
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id') id: string) {
+  delete(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('ID inválido. O ID deve ser um UUID válido.'),
+      }),
+    )
+    id: string,
+  ) {
     return this.tasksService.delete(id);
   }
 }
