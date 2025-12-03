@@ -18,7 +18,7 @@ export default function Navbar() {
 
   const routes = [
     { name: "Início", path: "/" },
-    { name: "Calendário", path: "/calendario" },
+    // { name: "Calendário", path: "/calendario" },
   ];
 
   return (
