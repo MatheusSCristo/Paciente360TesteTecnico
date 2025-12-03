@@ -22,7 +22,18 @@ export class TasksController {
 
   @Post()
   @HttpCode(201)
-  create(@Body() createTaskDto: CreateTaskDto) {
+  create(
+    @Body(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        exceptionFactory: () => {
+          return new BadRequestException('Campos inválidos enviados');
+        },
+      }),
+    )
+    createTaskDto: CreateTaskDto,
+  ) {
     return this.tasksService.create(createTaskDto);
   }
 
