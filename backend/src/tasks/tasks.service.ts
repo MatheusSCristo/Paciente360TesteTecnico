@@ -14,12 +14,47 @@ export class TasksService {
   async create(createTaskDto: CreateTaskDto) {
     const { title, description, priority, dueDate, status } = createTaskDto;
 
-    const dueDateObj = new Date(dueDate || '');
+    let dueDateObj: Date | undefined = undefined;
     if (dueDate) {
+      // Cria a data sem conversão de timezone
+      const dateString =
+        typeof dueDate === 'string' ? dueDate : dueDate.toISOString();
+
+      // Extrai apenas a parte da data (YYYY-MM-DD)
+      const [year, month, day] = dateString.split('T')[0].split('-');
+
+      // Cria a data usando UTC diretamente para evitar conversão de timezone
+      dueDateObj = new Date(
+        Date.UTC(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+
       if (isNaN(dueDateObj.getTime())) {
         throw new InvalidDateException('Data limite inválida');
       }
-      if (dueDateObj < new Date()) {
+
+      // Compara apenas a data, ignorando o horário
+      const today = new Date();
+      const todayUTC = new Date(
+        Date.UTC(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+
+      if (dueDateObj < todayUTC) {
         throw new InvalidDateException('A data limite não pode ser no passado');
       }
     }
@@ -28,7 +63,7 @@ export class TasksService {
       title,
       description,
       priority,
-      dueDate: dueDate ? dueDateObj : undefined,
+      dueDate: dueDateObj,
       status,
     });
 
@@ -95,14 +130,51 @@ export class TasksService {
       throw new TaskNotFoundException();
     }
 
-    const dueDateObj = new Date(updateTaskDto.dueDate || '');
     if (updateTaskDto.dueDate) {
+      // Cria a data sem conversão de timezone
+      const dateString =
+        typeof updateTaskDto.dueDate === 'string'
+          ? updateTaskDto.dueDate
+          : updateTaskDto.dueDate.toISOString();
+
+      // Extrai apenas a parte da data (YYYY-MM-DD)
+      const [year, month, day] = dateString.split('T')[0].split('-');
+
+      // Cria a data usando UTC diretamente para evitar conversão de timezone
+      const dueDateObj = new Date(
+        Date.UTC(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+
       if (isNaN(dueDateObj.getTime())) {
         throw new InvalidDateException('Data limite inválida');
       }
-      if (dueDateObj < new Date()) {
+
+      // Compara apenas a data, ignorando o horário
+      const today = new Date();
+      const todayUTC = new Date(
+        Date.UTC(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
+
+      if (dueDateObj < todayUTC) {
         throw new InvalidDateException('A data limite não pode ser no passado');
       }
+
       updateTaskDto.dueDate = dueDateObj;
     }
 
@@ -148,6 +220,9 @@ export class TasksService {
 
   async getStats() {
     const now = new Date();
+    // Define o início do dia atual (00:00:00)
+    now.setHours(0, 0, 0, 0);
+
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(now.getDate() - 7);
 
@@ -175,7 +250,7 @@ export class TasksService {
         where: {
           completedAt: {
             gte: oneWeekAgo,
-            lte: now,
+            lte: new Date(), // Até o momento atual
           },
         },
       }),
